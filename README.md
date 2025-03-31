@@ -38,7 +38,7 @@ def process_fasta(input_fasta, mapping, output_fasta):
     """
     读取 FASTA 文件，处理每个序列头：
       1. 清除原头部中“>”后第一个空格之后的所有内容，仅保留基因 ID；
-      2. 如果 mapping 中存在该基因的注释，则在基因 ID 后添加一个空格和注释信息；
+      2. 如果 mapping 中存在该基因的注释，则添加注释（空则替换为“-”），否则添加“-”；
       3. 序列其他部分保持不变。
     """
     with open(input_fasta) as fin, open(output_fasta, "w") as fout:
@@ -47,8 +47,11 @@ def process_fasta(input_fasta, mapping, output_fasta):
                 # 仅保留基因ID（即“>”后第一个空格之前的内容）
                 gene_id = line[1:].strip().split()[0]
                 new_header = ">" + gene_id
-                if gene_id in mapping and mapping[gene_id]:
-                    new_header += " " + mapping[gene_id]
+                # 获取注释，不存在或为空则替换为“-”
+                annotation = mapping.get(gene_id, '')
+                if not annotation.strip():
+                    annotation = '-'
+                new_header += " " + annotation
                 fout.write(new_header + "\n")
             else:
                 fout.write(line)
@@ -69,4 +72,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
